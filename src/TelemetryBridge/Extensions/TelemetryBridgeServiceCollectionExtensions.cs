@@ -67,8 +67,8 @@ public static class TelemetryBridgeServiceCollectionExtensions
                     .AddSource(options.ServiceName)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddGrpcClientInstrumentation()
-                    .AddGrpcCoreInstrumentation()
+                    // gRPC instrumentation packages remain prerelease on NuGet; rely on the ASP.NET Core/HTTP
+                    // instrumentation until stable versions are published.
                     .SetSampler(new AlwaysOnSampler())
                     .AddOtlpExporter(options => OtlpExporterOptionsResolver.Configure(options));
             })
@@ -77,7 +77,7 @@ public static class TelemetryBridgeServiceCollectionExtensions
                 meterProviderBuilder
                     .AddMeter(options.ServiceName)
                     .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation()
+                    // Process instrumentation is only available via prerelease packages; omit it to keep dependencies stable.
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddOtlpExporter(options => OtlpExporterOptionsResolver.Configure(options));
