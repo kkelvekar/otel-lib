@@ -10,6 +10,26 @@ namespace Todo.Worker.Workers;
 
 public sealed class TelemetryWorker : BackgroundService
 {
+    private static readonly Action<ILogger, int, Exception?> WorkerTickRecorded = LoggerMessage.Define<int>(
+        LogLevel.Information,
+        new EventId(1, nameof(WorkerTickRecorded)),
+        "Worker tick {Tick}");
+
+    private static readonly Action<ILogger, int, Exception?> WorkerWarningSample = LoggerMessage.Define<int>(
+        LogLevel.Warning,
+        new EventId(2, nameof(WorkerWarningSample)),
+        "Worker warning sample at tick {Tick}");
+
+    private static readonly Action<ILogger, int, Exception?> WorkerSimulatedError = LoggerMessage.Define<int>(
+        LogLevel.Error,
+        new EventId(3, nameof(WorkerSimulatedError)),
+        "Worker experienced a simulated error on tick {Tick}");
+
+    private static readonly Action<ILogger, Exception?> DownstreamHealthCheckFailed = LoggerMessage.Define(
+        LogLevel.Error,
+        new EventId(4, nameof(DownstreamHealthCheckFailed)),
+        "Failed to reach downstream API");
+
     private readonly ILogger<TelemetryWorker> _logger;
     private readonly WorkerMetrics _metrics;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -29,8 +49,8 @@ public sealed class TelemetryWorker : BackgroundService
         while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
         {
             tick++;
-            _logger.LogInformation("Worker tick {Tick}", tick);
-            _logger.LogWarning("Worker warning sample at tick {Tick}", tick);
+            WorkerTickRecorded(_logger, tick, null);
+            WorkerWarningSample(_logger, tick, null);
             _metrics.RecordHeartbeat();
 
             try
@@ -40,20 +60,20 @@ public sealed class TelemetryWorker : BackgroundService
                     throw new InvalidOperationException("Simulated worker failure");
                 }
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex, "Worker experienced a simulated error on tick {Tick}", tick);
+                WorkerSimulatedError(_logger, tick, ex);
             }
 
             try
             {
                 var client = _httpClientFactory.CreateClient("downstream");
-                using var response = await client.GetAsync("/health", stoppingToken).ConfigureAwait(false);
+                using var response = await client.GetAsync(new Uri("/health", UriKind.Relative), stoppingToken).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Failed to reach downstream API");
+                DownstreamHealthCheckFailed(_logger, ex);
             }
         }
     }

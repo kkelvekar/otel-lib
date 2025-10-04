@@ -6,7 +6,7 @@ using Xunit;
 
 namespace TelemetryBridge.Tests;
 
-public sealed class OtlpExporterOptionsResolverTests : IDisposable
+internal sealed class OtlpExporterOptionsResolverTests : IDisposable
 {
     private readonly Dictionary<string, string?> _originalEnvironment = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -15,7 +15,7 @@ public sealed class OtlpExporterOptionsResolverTests : IDisposable
     };
 
     [Fact]
-    public void Configure_UsesDefaults_WhenEnvVarsMissing()
+    public void ConfigureUsesDefaultsWhenEnvVarsMissing()
     {
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", null);
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", null);
@@ -28,7 +28,7 @@ public sealed class OtlpExporterOptionsResolverTests : IDisposable
     }
 
     [Fact]
-    public void Configure_UsesEnvironmentOverrides()
+    public void ConfigureUsesEnvironmentOverrides()
     {
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4318");
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");

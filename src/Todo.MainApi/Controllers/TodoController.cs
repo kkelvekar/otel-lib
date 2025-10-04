@@ -15,6 +15,31 @@ namespace Todo.MainApi.Controllers;
 [Route("todo")]
 public sealed class TodoController : ControllerBase
 {
+    private static readonly Action<ILogger, Exception?> FetchingTodosFromDownstream = LoggerMessage.Define(
+        LogLevel.Information,
+        new EventId(1, nameof(FetchingTodosFromDownstream)),
+        "Fetching todos from downstream");
+
+    private static readonly Action<ILogger, int, Exception?> FetchedTodosCount = LoggerMessage.Define<int>(
+        LogLevel.Debug,
+        new EventId(2, nameof(FetchedTodosCount)),
+        "Fetched {Count} todos");
+
+    private static readonly Action<ILogger, Exception?> ForwardingTodoCreation = LoggerMessage.Define(
+        LogLevel.Information,
+        new EventId(3, nameof(ForwardingTodoCreation)),
+        "Forwarding todo creation to downstream");
+
+    private static readonly Action<ILogger, int, Exception?> DownstreamCreatedTodo = LoggerMessage.Define<int>(
+        LogLevel.Information,
+        new EventId(4, nameof(DownstreamCreatedTodo)),
+        "Downstream created todo {Id}");
+
+    private static readonly Action<ILogger, Exception?> DownstreamCallFailed = LoggerMessage.Define(
+        LogLevel.Warning,
+        new EventId(5, nameof(DownstreamCallFailed)),
+        "Downstream call failed");
+
     private readonly IDownstreamTodoClient _client;
     private readonly ILogger<TodoController> _logger;
 
@@ -28,9 +53,9 @@ public sealed class TodoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyCollection<TodoItem>>> GetAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Fetching todos from downstream");
+        FetchingTodosFromDownstream(_logger, null);
         var todos = await _client.GetAllAsync(cancellationToken).ConfigureAwait(false);
-        _logger.LogDebug("Fetched {Count} todos", todos.Count);
+        FetchedTodosCount(_logger, todos.Count, null);
         return Ok(todos);
     }
 
@@ -44,17 +69,17 @@ public sealed class TodoController : ControllerBase
             return BadRequest(new { error = "Request body required" });
         }
 
-        _logger.LogInformation("Forwarding todo creation to downstream");
+        ForwardingTodoCreation(_logger, null);
 
         try
         {
             var item = await _client.CreateAsync(request, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("Downstream created todo {Id}", item.Id);
-            return Created($"/todo/{item.Id}", item);
+            DownstreamCreatedTodo(_logger, item.Id, null);
+            return Created(new Uri($"/todo/{item.Id}", UriKind.Relative), item);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "Downstream call failed");
+            DownstreamCallFailed(_logger, ex);
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Downstream API unavailable" });
         }
     }
