@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.svg'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.svg'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        dotnet: [8.0.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+          cache: true
+
+      - name: Restore
+        run: dotnet restore TelemetryBridgeDemo.sln
+
+      - name: Build
+        run: dotnet build TelemetryBridgeDemo.sln --configuration Release -warnaserror --no-restore
+
+      - name: Test
+        run: >-
+          dotnet test TelemetryBridgeDemo.sln --configuration Release --no-build
+          --logger "trx;LogFileName=test_results.trx"
+          /p:CollectCoverage=true
+          /p:CoverletOutput=./TestResults/coverage/
+          /p:CoverletOutputFormat=cobertura
+          --filter "TestCategory!=Integration&Category!=Integration&FullyQualifiedName!~Integration"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ runner.os }}
+          path: '**/test_results.trx'
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ runner.os }}
+          path: '**/TestResults/coverage/**'
+
+      - name: Report test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          reporter: dotnet-trx
+          path: '**/test_results.trx'
+          fail-on-error: false
