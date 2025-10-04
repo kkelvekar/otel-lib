@@ -68,7 +68,7 @@ internal sealed class TelemetryLogEventEmitter : ITelemetryLogEventEmitter
             }
         }
 
-        activity.AddEvent(new ActivityEvent("log", tags));
+        activity.AddEvent(new ActivityEvent("log", DateTimeOffset.UtcNow, tags));
     }
 
     private bool ShouldCapture(string category)

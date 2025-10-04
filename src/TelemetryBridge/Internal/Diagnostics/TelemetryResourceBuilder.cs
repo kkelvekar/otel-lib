@@ -14,7 +14,7 @@ internal static class TelemetryResourceBuilder
     {
         resourceBuilder
             .AddService(serviceName: options.ServiceName, serviceVersion: options.ServiceVersion)
-            .AddAttributes(new KeyValuePair<string, object?>[]
+            .AddAttributes(new KeyValuePair<string, string>[]
             {
                 new("service.instance.id", Environment.MachineName),
             });

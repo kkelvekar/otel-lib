@@ -33,12 +33,7 @@ internal sealed class MetricsHandle : IMetricsHandle, IDisposable
     }
 
     private void EnsureNotDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(MetricsHandle));
-        }
-    }
+        => ObjectDisposedException.ThrowIf(_disposed, this);
 
     public void Dispose()
     {
@@ -47,11 +42,7 @@ internal sealed class MetricsHandle : IMetricsHandle, IDisposable
             return;
         }
 
-        foreach (var instrument in _instruments.Values)
-        {
-            instrument.Dispose();
-        }
-
         _disposed = true;
+        _instruments.Clear();
     }
 }
