@@ -52,6 +52,7 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet }}
           cache: true
+          cache-dependency-path: '**/*.csproj'
 
       - name: Restore
         run: dotnet restore TelemetryBridgeDemo.sln
