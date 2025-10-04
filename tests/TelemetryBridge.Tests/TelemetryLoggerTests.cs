@@ -7,10 +7,10 @@ using Xunit;
 
 namespace TelemetryBridge.Tests;
 
-public sealed class TelemetryLoggerTests
+internal sealed class TelemetryLoggerTests
 {
     [Fact]
-    public void Logger_AddsSpanEvent_WithDeveloperLogs()
+    public void LoggerAddsSpanEventWithDeveloperLogs()
     {
         var services = new ServiceCollection();
         services.AddLogging();

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,8 +13,38 @@ namespace Todo.DownstreamApi.Controllers;
 
 [ApiController]
 [Route("todo")]
-public sealed class TodoController : ControllerBase
+internal sealed class TodoController : ControllerBase
 {
+    private static readonly Action<ILogger, Exception?> RetrievingTodoItems = LoggerMessage.Define(
+        LogLevel.Information,
+        new EventId(1, nameof(RetrievingTodoItems)),
+        "Retrieving todo items");
+
+    private static readonly Action<ILogger, Exception?> NullTodoRequest = LoggerMessage.Define(
+        LogLevel.Warning,
+        new EventId(2, nameof(NullTodoRequest)),
+        "Received null todo request");
+
+    private static readonly Action<ILogger, Exception?> EmptyTitleRejected = LoggerMessage.Define(
+        LogLevel.Warning,
+        new EventId(3, nameof(EmptyTitleRejected)),
+        "Rejected todo item with empty title");
+
+    private static readonly Action<ILogger, string, Exception?> CriticalTodoTriggered = LoggerMessage.Define<string>(
+        LogLevel.Critical,
+        new EventId(4, nameof(CriticalTodoTriggered)),
+        "Received todo item that triggers a critical scenario: {Title}");
+
+    private static readonly Action<ILogger, int, Exception?> TodoItemCreated = LoggerMessage.Define<int>(
+        LogLevel.Information,
+        new EventId(5, nameof(TodoItemCreated)),
+        "Created todo item {Id}");
+
+    private static readonly Action<ILogger, Exception?> TodoItemCreationFailed = LoggerMessage.Define(
+        LogLevel.Error,
+        new EventId(6, nameof(TodoItemCreationFailed)),
+        "Failed to create todo item");
+
     private readonly ITodoRepository _repository;
     private readonly TodoMetrics _metrics;
     private readonly ILogger<TodoController> _logger;
@@ -29,7 +60,7 @@ public sealed class TodoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IReadOnlyCollection<TodoItem>> Get()
     {
-        _logger.LogInformation("Retrieving todo items");
+        RetrievingTodoItems(_logger, null);
         var stopwatch = Stopwatch.StartNew();
         var items = _repository.GetAll().ToArray();
         stopwatch.Stop();
@@ -46,31 +77,31 @@ public sealed class TodoController : ControllerBase
     {
         if (request is null)
         {
-            _logger.LogWarning("Received null todo request");
+            NullTodoRequest(_logger, null);
             return BadRequest(new { error = "Request body required" });
         }
 
         if (string.IsNullOrWhiteSpace(request.Title))
         {
-            _logger.LogWarning("Rejected todo item with empty title");
+            EmptyTitleRejected(_logger, null);
             return BadRequest(new { error = "Title is required" });
         }
 
         if (string.Equals(request.Title, "panic", StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogCritical("Received todo item that triggers a critical scenario: {Title}", request.Title);
+            CriticalTodoTriggered(_logger, request.Title, null);
         }
 
         try
         {
             var item = _repository.Add(request.Title.Trim());
             _metrics.RecordCreated();
-            _logger.LogInformation("Created todo item {Id}", item.Id);
-            return Created($"/todo/{item.Id}", item);
+            TodoItemCreated(_logger, item.Id, null);
+            return Created(new Uri($"/todo/{item.Id}", UriKind.Relative), item);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Failed to create todo item");
+            TodoItemCreationFailed(_logger, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "Could not create todo item" });
         }
     }

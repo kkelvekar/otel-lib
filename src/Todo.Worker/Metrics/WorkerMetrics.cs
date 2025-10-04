@@ -4,7 +4,7 @@ using TelemetryBridge;
 
 namespace Todo.Worker.Metrics;
 
-public sealed class WorkerMetrics
+internal sealed class WorkerMetrics
 {
     private readonly Counter<long> _heartbeatCounter;
 

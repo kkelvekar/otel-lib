@@ -4,13 +4,13 @@ using Xunit;
 
 namespace TelemetryBridge.Tests;
 
-public sealed class AddTelemetryBridgeTests
+internal sealed class AddTelemetryBridgeTests
 {
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
     [InlineData("\t")]
-    public void AddTelemetryBridge_RejectsBlankServiceName(string? serviceName)
+    public void AddTelemetryBridgeRejectsBlankServiceName(string? serviceName)
     {
         var services = new ServiceCollection();
         Assert.Throws<ArgumentException>(() => services.AddTelemetryBridge(serviceName!));
