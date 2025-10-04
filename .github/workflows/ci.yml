@@ -86,6 +86,7 @@ jobs:
         if: always()
         uses: dorny/test-reporter@v1
         with:
+          name: dotnet-tests
           reporter: dotnet-trx
           path: '**/test_results.trx'
           fail-on-error: false
