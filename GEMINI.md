@@ -121,3 +121,6 @@ Update README.md if user-facing commands or environment variables change.
 Include unit tests for guard clauses and configuration logic.
 
 Document all non-obvious design decisions with inline comments
+
+## Agent Operational Notes
+- The OpenTelemetry (OTel) Collector, when started via `docker-compose`, should not be manually stopped by the agent at the end of a task. It should be left running to allow for continuous telemetry collection and user inspection.

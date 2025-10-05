@@ -1,0 +1,29 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  azuremonitor:
+    connection_string: "${APPLICATIONINSIGHTS_CONNECTION_STRING}"
+  logging:
+    loglevel: debug
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuremonitor, logging]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuremonitor, logging]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuremonitor, logging]
