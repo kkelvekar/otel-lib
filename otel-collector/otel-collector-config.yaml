@@ -13,6 +13,12 @@ exporters:
 processors:
   batch:
 
+  filter:
+    logs:
+      log_record:
+        - 'IsMatch(instrumentation_scope.name, "Microsoft\\\\..*")'
+        - 'IsMatch(instrumentation_scope.name, "System\\\\..*")'
+
 service:
   pipelines:
     traces:
@@ -25,5 +31,5 @@ service:
       exporters: [azuremonitor, logging]
     logs:
       receivers: [otlp]
-      processors: [batch]
+      processors: [batch, filter]
       exporters: [azuremonitor, logging]
