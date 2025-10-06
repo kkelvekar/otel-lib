@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -26,17 +25,17 @@ namespace Todo.MainApi.Controllers
         {
             _logger.LogInformation("Getting all todos from downstream API");
             var todos = await _httpClient.GetFromJsonAsync<IEnumerable<Todo>>("todo");
-            return todos ?? new List<Todo>();
+            return todos ?? [];
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Todo>> Get(int id)
         {
-            _logger.LogInformation($"Getting todo with id {id} from downstream API");
+            _logger.LogInformation("Getting todo with id {Id} from downstream API", id);
             var todo = await _httpClient.GetFromJsonAsync<Todo>($"todo/{id}");
             if (todo == null)
             {
-                _logger.LogWarning($"Todo with id {id} not found in downstream API");
+                _logger.LogWarning("Todo with id {Id} not found in downstream API", id);
                 return NotFound();
             }
             return todo;
@@ -53,25 +52,25 @@ namespace Todo.MainApi.Controllers
                 _logger.LogError("Failed to create todo via downstream API");
                 return BadRequest();
             }
-            _logger.LogInformation($"Created todo with id {createdTodo.Id} via downstream API");
+            _logger.LogInformation("Created todo with id {Id} via downstream API", createdTodo.Id);
             return CreatedAtAction(nameof(Get), new { id = createdTodo.Id }, createdTodo);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Todo todo)
         {
-            _logger.LogInformation($"Updating todo with id {id} via downstream API");
+            _logger.LogInformation("Updating todo with id {Id} via downstream API", id);
             await _httpClient.PutAsJsonAsync($"todo/{id}", todo);
-            _logger.LogInformation($"Updated todo with id {id} via downstream API");
+            _logger.LogInformation("Updated todo with id {Id} via downstream API", id);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            _logger.LogInformation($"Deleting todo with id {id} via downstream API");
+            _logger.LogInformation("Deleting todo with id {Id} via downstream API", id);
             await _httpClient.DeleteAsync($"todo/{id}");
-            _logger.LogInformation($"Deleted todo with id {id} via downstream API");
+            _logger.LogInformation("Deleted todo with id {Id} via downstream API", id);
             return NoContent();
         }
     }

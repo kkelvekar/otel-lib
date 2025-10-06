@@ -12,6 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TelemetryBridge\UBS.AM.Observability.csproj" />
+    <ProjectReference Include="..\UBS.AM.Observability\UBS.AM.Observability.csproj" />
   </ItemGroup>
 </Project>
