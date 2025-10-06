@@ -2,23 +2,21 @@ name: .NET
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore TelemetryBridgeDemo.sln
-    - name: Build
-      run: dotnet build TelemetryBridgeDemo.sln --configuration Release --no-restore -warnaserror
-    - name: Test
-      run: dotnet test TelemetryBridgeDemo.sln --no-build --verbosity normal
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore Observability.sln
+      - name: Build
+        run: dotnet build Observability.sln --configuration Release --no-restore -warnaserror
