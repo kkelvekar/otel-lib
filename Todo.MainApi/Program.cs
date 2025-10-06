@@ -1,9 +1,9 @@
-using TelemetryBridge;
+using UBS.AM.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddTelemetryBridge("Todo.MainApi");
+builder.Services.AddObservability("Todo.MainApi");
 builder.Services.AddControllers();
 
 builder.Services.AddHttpClient("DownstreamApi", (serviceProvider, client) =>

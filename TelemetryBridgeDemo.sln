@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemetryBridge", "TelemetryBridge\TelemetryBridge.csproj", "{29BBA35E-080A-466A-B52F-D32E43A11D98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBS.AM.Observability", "TelemetryBridge\UBS.AM.Observability.csproj", "{29BBA35E-080A-466A-B52F-D32E43A11D98}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Todo.MainApi", "Todo.MainApi\Todo.MainApi.csproj", "{6D284783-850A-40E0-8826-6927EE2F0C93}"
 EndProject
@@ -72,5 +72,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0BF83C3F-C58F-4C74-AB5A-F1CF6276EC58}
 	EndGlobalSection
 EndGlobal

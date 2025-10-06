@@ -1,8 +1,8 @@
-using TelemetryBridge;
 using Todo.Worker;
+using UBS.AM.Observability;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddTelemetryBridge("Todo.Worker");
+builder.Services.AddObservability("Todo.Worker");
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
